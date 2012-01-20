@@ -27,7 +27,7 @@
 #include "amx.h"
 #include "amxaux.h"
 
-size_t AMXAPI aux_ProgramSize(char *filename)
+size_t AMXAPI aux_ProgramSize(const char *filename)
 {
   FILE *fp;
   size_t size;
@@ -45,7 +45,7 @@ size_t AMXAPI aux_ProgramSize(char *filename)
   return (hdr.magic==AMX_MAGIC) ? (size_t)hdr.stp : 0;
 }
 
-int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
+int AMXAPI aux_LoadProgram(AMX *amx, const char *filename, void *memblock)
 {
   FILE *fp;
   size_t size;
@@ -61,6 +61,7 @@ int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
     return AMX_ERR_FORMAT;
   } /* if */
   amx_Align16(&hdr.magic);
+  amx_Align16((uint16_t *)&hdr.flags);
   amx_Align32((uint32_t *)&hdr.size);
   amx_Align32((uint32_t *)&hdr.stp);
   if (hdr.magic != AMX_MAGIC) {

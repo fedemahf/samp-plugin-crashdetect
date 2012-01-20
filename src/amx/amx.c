@@ -1785,7 +1785,12 @@ int AMXAPI amx_PushString(AMX *amx, cell *amx_addr, cell **phys_addr, const char
 #define PUSH(v)         ( stk-=sizeof(cell), _W(data,stk,v) )
 #define POP(v)          ( v=_R(data,stk), stk+=sizeof(cell) )
 
-#define ABORT(amx,v)    { (amx)->stk=reset_stk; (amx)->hea=reset_hea; return v; }
+#define ABORT(amx,v)    { (amx)->pri = pri;\
+						  (amx)->stk = stk;\
+						  (amx)->hea = hea;\
+						  (amx)->frm = frm;\
+						  amx_Error(amx, index, v);\
+                          (amx)->stk=reset_stk; (amx)->hea=reset_hea; return v; }
 
 #define CHKMARGIN()     if (hea+STKMARGIN>stk) return AMX_ERR_STACKERR
 #define CHKSTACK()      if (stk>amx->stp) return AMX_ERR_STACKLOW
@@ -3098,6 +3103,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
 #else
 
   for ( ;; ) {
+	amx->cip = (cell)cip - (cell)code;
     op=(OPCODE) _RCODE();
     switch (op) {
     case OP_LOAD_PRI:
@@ -3127,11 +3133,15 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       alt=_R(data,offs);
       break;
     case OP_LREF_S_PRI:
+      amx->frm=frm;
+      amx->stk=stk;
       GETPARAM(offs);
       offs=_R(data,frm+offs);
       pri=_R(data,offs);
       break;
     case OP_LREF_S_ALT:
+      amx->frm=frm;
+      amx->stk=stk;  
       GETPARAM(offs);
       offs=_R(data,frm+offs);
       alt=_R(data,offs);
@@ -3190,11 +3200,15 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       _W(data,frm+offs,alt);
       break;
     case OP_SREF_PRI:
+      amx->frm=frm;
+      amx->stk=stk;
       GETPARAM(offs);
       offs=_R(data,offs);
       _W(data,offs,pri);
       break;
     case OP_SREF_ALT:
+      amx->frm = frm;
+      amx->stk = stk;
       GETPARAM(offs);
       offs=_R(data,offs);
       _W(data,offs,alt);
@@ -3396,10 +3410,6 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
     case OP_CALL:
       PUSH(((unsigned char *)cip-code)+sizeof(cell));/* skip address */
       cip=JUMPABS(code, cip);                   /* jump to the address */
-      break;
-    case OP_CALL_PRI:
-      PUSH((unsigned char *)cip-code);
-      cip=(cell *)(code+(int)pri);
       break;
     case OP_JUMP:
       /* since the GETPARAM() macro modifies cip, you cannot
@@ -3860,9 +3870,6 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_SYMTAG:
       SKIPPARAM(1);
-      break;
-    case OP_JUMP_PRI:
-      cip=(cell *)(code+(int)pri);
       break;
     case OP_SWITCH: {
       cell *cptr;

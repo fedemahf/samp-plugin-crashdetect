@@ -30,6 +30,8 @@
 #if (defined __linux || defined __linux__) && !defined __LINUX__
   #define __LINUX__
 #endif
+#include <stddef.h>
+
 #if defined FREEBSD && !defined __FreeBSD__
   #define __FreeBSD__
 #endif

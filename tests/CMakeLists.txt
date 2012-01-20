@@ -1,7 +1,9 @@
-include(AddSAMPPluginTestPR)
+include(AddSAMPPluginTest)
 
 find_package(PawnCC REQUIRED)
-find_package(PluginRunner REQUIRED)
+find_package(PythonInterp 2.7 REQUIRED)
+find_package(SAMPServer REQUIRED)
+find_package(SAMPServerCLI REQUIRED)
 
 macro(test target name)
   file(STRINGS ${name}.pwn _test_code)

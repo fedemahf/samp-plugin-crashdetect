@@ -1,6 +1,6 @@
 /*  Support routines for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2003-2005
+ *  Copyright (c) ITB CompuPhase, 2003-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -18,8 +18,9 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxaux.h 3363 2005-07-23 09:03:29Z thiadmer $
+ *  Version: $Id: amxaux.h 3612 2006-07-22 09:59:46Z thiadmer $
  */
+
 #ifndef AMXAUX_H_INCLUDED
 #define AMXAUX_H_INCLUDED
 
@@ -30,8 +31,8 @@ extern  "C" {
 #endif
 
 /* loading and freeing programs */
-size_t AMXAPI aux_ProgramSize(const char *filename);
-int AMXAPI aux_LoadProgram(AMX *amx, const char *filename, void *memblock);
+size_t AMXAPI aux_ProgramSize(char *filename);
+int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock);
 int AMXAPI aux_FreeProgram(AMX *amx);
 
 /* a readable error message from an error code */

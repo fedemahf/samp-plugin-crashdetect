@@ -1,6 +1,6 @@
 /*  Support routines for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2003-2005
+ *  Copyright (c) ITB CompuPhase, 2003-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -18,41 +18,49 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxaux.c 3363 2005-07-23 09:03:29Z thiadmer $
+ *  Version: $Id: amxaux.c 3612 2006-07-22 09:59:46Z thiadmer $
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "amx.h"
 #include "amxaux.h"
 
-size_t AMXAPI aux_ProgramSize(const char *filename)
+size_t AMXAPI aux_ProgramSize(char *filename)
 {
   FILE *fp;
+  size_t size;
   AMX_HEADER hdr;
 
   if ((fp=fopen(filename,"rb")) == NULL)
     return 0;
-  fread(&hdr, sizeof hdr, 1, fp);
+  size = fread(&hdr, sizeof hdr, 1, fp);
   fclose(fp);
+  if (size < 1)
+    return 0;
 
   amx_Align16(&hdr.magic);
   amx_Align32((uint32_t *)&hdr.stp);
   return (hdr.magic==AMX_MAGIC) ? (size_t)hdr.stp : 0;
 }
 
-int AMXAPI aux_LoadProgram(AMX *amx, const char *filename, void *memblock)
+int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
 {
   FILE *fp;
+  size_t size;
   AMX_HEADER hdr;
   int result, didalloc;
 
   /* open the file, read and check the header */
   if ((fp = fopen(filename, "rb")) == NULL)
     return AMX_ERR_NOTFOUND;
-  fread(&hdr, sizeof hdr, 1, fp);
+  size = fread(&hdr, sizeof hdr, 1, fp);
+  if (size < 1) {
+    fclose(fp);
+    return AMX_ERR_FORMAT;
+  } /* if */
   amx_Align16(&hdr.magic);
-  amx_Align16((uint16_t *)&hdr.flags);
   amx_Align32((uint32_t *)&hdr.size);
   amx_Align32((uint32_t *)&hdr.stp);
   if (hdr.magic != AMX_MAGIC) {
@@ -73,8 +81,10 @@ int AMXAPI aux_LoadProgram(AMX *amx, const char *filename, void *memblock)
 
   /* read in the file */
   rewind(fp);
-  fread(memblock, 1, (size_t)hdr.size, fp);
+  size = fread(memblock, 1, (size_t)hdr.size, fp);
   fclose(fp);
+  if (size < (size_t)hdr.size)
+    return AMX_ERR_FORMAT;
 
   /* initialize the abstract machine */
   memset(amx, 0, sizeof *amx);
@@ -130,7 +140,6 @@ static char *messages[] = {
       /* AMX_ERR_PARAMS    */ "Parameter error",
       /* AMX_ERR_DOMAIN    */ "Domain error, expression result does not fit in range",
       /* AMX_ERR_GENERAL   */ "General error (unknown or unspecific error)",
-      /* AMX_ERR_ADDRESS_0 */ "Wrote to banned address naught",
     };
   if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
     return "(unknown)";

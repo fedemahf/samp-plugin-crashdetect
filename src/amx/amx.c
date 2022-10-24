@@ -77,25 +77,26 @@
 /* CheckLongCallTime uses the values in `amx`, but while we're in `Exec`
  * they aren't accurate.
  */
-#define CHECK_LONG_CALL_TIME()                \
-  do {                                        \
-    if (long_call_ctl==NULL)                  \
-      break;                                  \
-    static unsigned int long_call_delay=5000; \
-    if (--long_call_delay==0) {               \
-      cell tmp_frm=amx->frm;                  \
-      cell tmp_hea=amx->hea;                  \
-      cell tmp_stk=amx->stk;                  \
-      amx->frm=frm;                           \
-      amx->hea=hea;                           \
-      amx->stk=stk;                           \
-      long_call_ctl(amx,AMX_LCT_CHECK,0);     \
-      long_call_delay=5000;                   \
-      amx->frm=tmp_frm;                       \
-      amx->hea=tmp_hea;                       \
-      amx->stk=tmp_stk;                       \
-    }                                         \
-  } while (0)
+static void checkLongCallTime(AMX * amx, AMX_LCT_CTL long_call_ctl, cell frm, cell hea, cell stk) {
+  static unsigned int long_call_delay=5000;
+  if (long_call_ctl == NULL)
+    return;
+  if (--long_call_delay == 0) {
+      cell tmp_frm = amx->frm;
+      cell tmp_hea = amx->hea;
+      cell tmp_stk = amx->stk;
+      amx->frm = frm;
+      amx->hea = hea;
+      amx->stk = stk;
+      long_call_ctl(amx,AMX_LCT_CHECK,0);
+      long_call_delay = 5000;
+      amx->frm = tmp_frm;
+      amx->hea = tmp_hea;
+      amx->stk = tmp_stk;
+  }
+}
+
+#define CHECK_LONG_CALL_TIME() checkLongCallTime(amx, long_call_ctl, frm, hea, stk)
 
 /* When one or more of the AMX_funcname macris are defined, we want
  * to compile only those functions. However, when none of these macros

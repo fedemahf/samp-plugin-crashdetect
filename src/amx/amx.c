@@ -77,22 +77,17 @@
 /* CheckLongCallTime uses the values in `amx`, but while we're in `Exec`
  * they aren't accurate.
  */
-static void checkLongCallTime(AMX * amx, AMX_LCT_CTL long_call_ctl, cell frm, cell hea, cell stk) {
+static void checkLongCallTime(AMX const *amx, AMX_LCT_CTL long_call_ctl, cell frm, cell hea, cell stk) {
   static unsigned int long_call_delay=5000;
   if (long_call_ctl == NULL)
     return;
   if (--long_call_delay == 0) {
-      cell tmp_frm = amx->frm;
-      cell tmp_hea = amx->hea;
-      cell tmp_stk = amx->stk;
-      amx->frm = frm;
-      amx->hea = hea;
-      amx->stk = stk;
-      long_call_ctl(amx,AMX_LCT_CHECK,0);
+      AMX tmp = *amx;
+      tmp.frm = frm;
+      tmp.hea = hea;
+      tmp.stk = stk;
+      long_call_ctl(&tmp,AMX_LCT_CHECK,0);
       long_call_delay = 5000;
-      amx->frm = tmp_frm;
-      amx->hea = tmp_hea;
-      amx->stk = tmp_stk;
   }
 }
 

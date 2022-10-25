@@ -77,21 +77,21 @@
 /* CheckLongCallTime uses the values in `amx`, but while we're in `Exec`
  * they aren't accurate.
  */
+static unsigned int long_call_delay=0;
 static void checkLongCallTime(AMX const *amx, AMX_LCT_CTL long_call_ctl, cell frm, cell hea, cell stk) {
-  static unsigned int long_call_delay=5000;
-  if (long_call_ctl == NULL)
-    return;
-  if (--long_call_delay == 0) {
+  if (long_call_delay >= 5000) {
+    if (long_call_ctl) {
       AMX tmp = *amx;
       tmp.frm = frm;
       tmp.hea = hea;
       tmp.stk = stk;
       long_call_ctl(&tmp,AMX_LCT_CHECK,0);
-      long_call_delay = 5000;
+    }
+    long_call_delay = 0;
   }
 }
 
-#define CHECK_LONG_CALL_TIME() checkLongCallTime(amx, long_call_ctl, frm, hea, stk)
+#define CHECK_LONG_CALL_TIME() (++long_call_delay)
 
 /* When one or more of the AMX_funcname macris are defined, we want
  * to compile only those functions. However, when none of these macros
@@ -2704,7 +2704,9 @@ static const void * const amx_opcodelist[] = {
   op_nop:
     NEXT(cip);
   op_break:
-      if (amx->debug!=NULL) {
+    /* only checked at the ends of statements */
+    checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
+    if (amx->debug!=NULL) {
       /* store status */
       amx->frm=frm;
       amx->stk=stk;
@@ -3750,6 +3752,8 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
     case OP_NOP:
       break;
     case OP_BREAK:
+      /* only checked at the ends of statements */
+      checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
       assert((amx->flags & AMX_FLAG_BROWSE)==0);
       if (amx->debug!=NULL) {
         /* store status */

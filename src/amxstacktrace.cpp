@@ -185,7 +185,7 @@ AMXStackTrace GetAMXStackTrace(AMXRef amx,
                                int max_depth) {
   // Use a fake frame, hopefully without clobbering anything in silly code.
   cell stk = amx.GetStk();
-  cell hlw = amx.GetHlw();
+  cell hlw = amx.GetHea();
   if (amx.CheckStack() && amx.GetStackSpaceLeft() >= (2 * sizeof(cell))) {
     amx.SetStk(hlw + (2 * sizeof(cell)));
     amx.PushStack(cip);

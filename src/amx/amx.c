@@ -2705,8 +2705,8 @@ static const void * const amx_opcodelist[] = {
     NEXT(cip);
   op_break:
     /* only checked at the ends of statements */
-    checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
     if (amx->debug!=NULL) {
+      checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
       /* store status */
       amx->frm=frm;
       amx->stk=stk;
@@ -3753,9 +3753,9 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_BREAK:
       /* only checked at the ends of statements */
-      checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
       assert((amx->flags & AMX_FLAG_BROWSE)==0);
       if (amx->debug!=NULL) {
+        checkLongCallTime(amx, long_call_ctl, frm, hea, stk);
         /* store status */
         amx->frm=frm;
         amx->stk=stk;

@@ -19,6 +19,6 @@
         }
     ],
     "runtime": {
-        "plugins": ["Zeex/samp-plugin-crashdetect"]
+        "plugins": ["Bloodhacker/samp-plugin-crashdetect"]
     }
 }
